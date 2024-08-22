@@ -1,0 +1,125 @@
+<ion-content>
+  <div class="game-container">
+    <!-- Compteur de cartes de la partie -->
+    <div class="card-counter">
+      <p>Total de cartes dans la partie: {{ getTotalCardCount() }}</p>
+      <p>Cartes sur la table: {{ getCardsOnTableCount() }}</p>
+      <p>Total général (partie + table): {{ getOverallCardCount() }}</p>
+    </div>
+
+    <!-- Affichage des scores des joueurs -->
+    <div class="player-info">
+      <p>Joueur 1: {{ gameService.getScores().player1 }} carte(s)</p>
+      <p>Joueur 2: {{ gameService.getScores().player2 }} carte(s)</p>
+    </div>
+
+    <!-- Affichage des cartes jouées -->
+    <div class="player-hand">
+      <ion-card *ngIf="currentCardPlayer1" class="card" [ngClass]="getCardColorClass(currentCardPlayer1.suit)">
+        <ion-card-content>{{ currentCardPlayer1.value }} {{ currentCardPlayer1.suit }}</ion-card-content>
+      </ion-card>
+      <ion-card *ngIf="currentCardPlayer2" class="card" [ngClass]="getCardColorClass(currentCardPlayer2.suit)">
+        <ion-card-content>{{ currentCardPlayer2.value }} {{ currentCardPlayer2.suit }}</ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Boutons de contrôle du jeu -->
+    <div class="buttons">
+      <ion-button expand="full" (click)="drawCard(1)" [disabled]="currentTurn !== 1 || autoPlayInterval">Joueur 1 joue</ion-button>
+      <ion-button expand="full" (click)="drawCard(2)" [disabled]="currentTurn !== 2 || !currentCardPlayer1 || autoPlayInterval">Joueur 2 joue</ion-button>
+      <ion-button expand="full" color="danger" (click)="toggleAutoPlay()">
+        {{ autoPlayInterval ? 'Arrêter le jeu automatique' : 'Jeu automatique' }}
+      </ion-button>
+      <!-- Bouton "Recommencer" -->
+      <ion-button expand="full" *ngIf="gameEnded" (click)="restartGame()">Recommencer</ion-button>
+      <ion-button expand="full" (click)="openRules()">Règles du jeu</ion-button>
+    </div>
+
+    <!-- Message combiné affiché -->
+    <div *ngIf="gameService.getCombinedMessage()" class="combined-message">
+      <p>{{ gameService.getCombinedMessage() }}</p>
+    </div>
+
+    <!-- Historique des coups -->
+    <div class="history-container">
+      <h2>Historique des coups</h2>
+      <div class="history">
+        <table class="card-table">
+          <thead>
+            <tr>
+              <th>Tour</th>
+              <th>Joueur 1</th>
+              <th>Joueur 2</th>
+              <th>Gagnant</th>
+              <th>Total cartes Joueur 1</th>
+              <th>Total cartes Joueur 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let round of getHistory()">
+              <td>{{ round.round }}</td>
+              <td>
+                <div *ngFor="let card of round.player1Cards" [ngClass]="getCardColorClass(card.suit)">
+                  {{ card.value }} {{ card.suit }}
+                </div>
+              </td>
+              <td>
+                <div *ngFor="let card of round.player2Cards" [ngClass]="getCardColorClass(card.suit)">
+                  {{ card.value }} {{ card.suit }}
+                </div>
+              </td>
+              <td>{{ round.winner }}</td>
+              <td>{{ round.player1Total }}</td>
+              <td>{{ round.player2Total }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Affichage des paquets des joueurs -->
+    <div class="decks">
+      <div class="deck">
+        <h3>Paquet de Joueur 1 ({{ gameService.getScores().player1 }})</h3>
+        <div class="deck-cards">
+          <ion-card *ngFor="let card of gameService.getPlayerDeck(1)" class="deck-card" [ngClass]="getCardColorClass(card.suit)">
+            <ion-card-content>{{ card.value }} {{ card.suit }}</ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+      <div class="deck">
+        <h3>Paquet de Joueur 2 ({{ gameService.getScores().player2 }})</h3>
+        <div class="deck-cards">
+          <ion-card *ngFor="let card of gameService.getPlayerDeck(2)" class="deck-card" [ngClass]="getCardColorClass(card.suit)">
+            <ion-card-content>{{ card.value }} {{ card.suit }}</ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour les règles du jeu -->
+  <ion-modal [isOpen]="rulesModalOpen" (ionModalDidDismiss)="closeRules()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Règles du jeu</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeRules()">Fermer</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <div class="rules-content">
+          <p><strong>Matériel :</strong> Un jeu de 52 cartes (sans les jokers).</p>
+          <p><strong>Nombre de joueurs :</strong> 2 joueurs.</p>
+          <p><strong>Préparation :</strong> Mélangez le jeu de cartes. Distribuez toutes les cartes aux deux joueurs, de manière à ce que chaque joueur ait 26 cartes. Les joueurs ne regardent pas leurs cartes et les gardent en pile face cachée devant eux.</p>
+          <p><strong>But du jeu :</strong> Le but est de remporter toutes les cartes de l'adversaire.</p>
+          <p><strong>Déroulement du jeu :</strong> Les deux joueurs retournent simultanément la carte du dessus de leur pile et la posent face visible sur la table. Le joueur qui a retourné la carte de valeur la plus élevée remporte les deux cartes et les place sous sa pile de cartes, face cachée. Les valeurs des cartes sont les suivantes (de la plus faible à la plus forte) : 2, 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As.</p>
+          <p><strong>Cas de bataille :</strong> Si les deux cartes sont de même valeur, il y a "bataille". Chaque joueur pose une carte face cachée sur la carte qu'il vient de retourner, puis retourne une nouvelle carte face visible par-dessus. Le joueur qui a retourné la carte de valeur la plus élevée cette fois-ci remporte toutes les cartes en jeu (les cartes visibles et cachées). Si les nouvelles cartes sont encore de même valeur, une nouvelle bataille est déclenchée selon le même principe.</p>
+          <p><strong>Fin de la partie :</strong> La partie continue jusqu'à ce qu'un des joueurs n'ait plus de cartes. Le joueur qui a toutes les cartes est déclaré vainqueur. Pour éviter les parties trop longues, un temps limite peut être fixé. Le joueur avec le plus de cartes à la fin du temps imparti gagne.</p>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
