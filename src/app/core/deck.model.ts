@@ -26,7 +26,11 @@ export class Deck {
     }
   }
 
-  public distribuer(): Card | undefined {
+  public distribuer(): Card[] {
+    return this.cards;
+  }
+
+  public piocher(): Card | undefined {
     return this.cards.shift();
   }
 

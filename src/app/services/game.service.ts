@@ -3,153 +3,140 @@ import { Card } from '../core/card.model';
 import { Deck } from '../core/deck.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GameService {
-  private deck: Deck = new Deck();
-  private player1Deck: Card[] = [];
-  private player2Deck: Card[] = [];
+  private playerDecks: { [key: number]: Card[] } = { 1: [], 2: [] };
   private tableCards: Card[] = [];
-  private battleMessage: string = '';
-  private currentCardPlayer1: Card | null = null;
-  private currentCardPlayer2: Card | null = null;
-  private history: any[] = [];
+  private history: { round: number, player1Cards: Card[], player2Cards: Card[], winner: string, player1Total: number, player2Total: number }[] = [];
   private roundCounter: number = 0;
+  private gameOver: boolean = false;
   private gameOverMessage: string = '';
-  private combinedMessage: string = '';
+  private battleOngoing: boolean = false;
 
-  constructor() {
-    this.startGame();
-  }
+  // Nombre maximum de tours fixé à 3000
+  private maxRounds: number = 3001;
 
   startGame(): void {
-    this.deck = new Deck();
-    this.deck.melanger();
-    this.player1Deck = [];
-    this.player2Deck = [];
-    this.tableCards = [];
-    this.currentCardPlayer1 = null;
-    this.currentCardPlayer2 = null;
-    this.history = [];
-    this.roundCounter = 0;
+    this.gameOver = false;
     this.gameOverMessage = '';
-    this.combinedMessage = '';
+    this.roundCounter = 0;
+    this.history = [];
+    this.tableCards = [];
+    this.battleOngoing = false;
 
-    while (this.deck.longueur > 0) {
-      this.player1Deck.push(this.deck.distribuer()!);
-      if (this.deck.longueur > 0) this.player2Deck.push(this.deck.distribuer()!);
-    }
+    const deck = new Deck();
+    deck.melanger();
 
-    // Vérification que le total des cartes est bien 52
-    const totalCards = this.player1Deck.length + this.player2Deck.length;
-    if (totalCards !== 52) {
-      console.error(`Erreur: le nombre total de cartes distribué n'est pas égal à 52. Total actuel: ${totalCards}`);
-    }
+    this.playerDecks[1] = deck.distribuer().slice(0, 26);
+    this.playerDecks[2] = deck.distribuer().slice(26, 52);
   }
 
   drawCard(player: number): Card | null {
-    if (player === 1 && this.player1Deck.length > 0) {
-      this.currentCardPlayer1 = this.player1Deck.shift() || null;
-      return this.currentCardPlayer1;
-    } else if (player === 2 && this.player2Deck.length > 0) {
-      this.currentCardPlayer2 = this.player2Deck.shift() || null;
-      return this.currentCardPlayer2;
+    if (this.playerDecks[player].length === 0 || this.gameOver) {
+      return null;
     }
-    return null;
+    const card = this.playerDecks[player].shift()!;
+    this.tableCards.push(card);
+    return card;
   }
 
-  playRound(): string {
-    if (this.currentCardPlayer1 && this.currentCardPlayer2) {
-      this.roundCounter++;
-      this.tableCards.push(this.currentCardPlayer1, this.currentCardPlayer2); // Ajoute les cartes sur la table
-
-      let winner: string = '';
-      while (this.currentCardPlayer1.compareTo(this.currentCardPlayer2) === 0) {
-        // Bataille
-        this.battleMessage = "Bataille!";
-
-        if (this.player1Deck.length < 2 || this.player2Deck.length < 2) {
-          winner = this.player1Deck.length > this.player2Deck.length ? 'Joueur 1' : 'Joueur 2';
-          break;
-        }
-
-        // Chaque joueur pose une carte face cachée
-        this.tableCards.push(this.player1Deck.shift()!, this.player2Deck.shift()!);
-
-        // Puis une nouvelle carte face visible
-        this.currentCardPlayer1 = this.player1Deck.shift()!;
-        this.currentCardPlayer2 = this.player2Deck.shift()!;
-        this.tableCards.push(this.currentCardPlayer1, this.currentCardPlayer2);
-      }
-
-      if (winner === '') {
-        if (this.currentCardPlayer1.compareTo(this.currentCardPlayer2) > 0) {
-          winner = 'Joueur 1';
-          this.player1Deck.push(...this.tableCards);
-        } else {
-          winner = 'Joueur 2';
-          this.player2Deck.push(...this.tableCards);
-        }
-      } else {
-        // Si un gagnant est déterminé (un joueur a plus de cartes), il récupère toutes les cartes restantes
-        if (winner === 'Joueur 1') {
-          this.player1Deck.push(...this.tableCards);
-        } else {
-          this.player2Deck.push(...this.tableCards);
-        }
-      }
-
-      this.history.push({
-        round: this.roundCounter,
-        player1Cards: [...this.tableCards.filter((_, i) => i % 2 === 0)],
-        player2Cards: [...this.tableCards.filter((_, i) => i % 2 !== 0)],
-        winner: winner,
-        player1Total: this.player1Deck.length,
-        player2Total: this.player2Deck.length,
-      });
-
-      // Vérification que le total des cartes reste 52
-      const totalCards = this.player1Deck.length + this.player2Deck.length;
-      if (totalCards !== 52) {
-        console.error(`Erreur : Le total des cartes n'est pas égal à 52 après le tour. Total actuel: ${totalCards}`);
-      }
-
-      this.currentCardPlayer1 = null;
-      this.currentCardPlayer2 = null;
-
-      // Vérifier si l'un des joueurs n'a plus de cartes pour arrêter le jeu
-      if (this.player1Deck.length === 0 || this.player2Deck.length === 0) {
-        this.gameOverMessage = `${winner} a gagné la partie!`;
-      }
-
-      this.tableCards = []; // Réinitialiser les cartes sur la table après chaque tour
-
-      return winner === 'Bataille' ? 'Bataille' : `Tour remporté par ${winner}`;
-    }
-    return '';
-  }
-
-  getScores(): { player1: number, player2: number } {
-    return { player1: this.player1Deck.length, player2: this.player2Deck.length };
-  }
-
-  getCurrentCardPlayer1(): Card | null {
-    return this.currentCardPlayer1;
-  }
-
-  getCurrentCardPlayer2(): Card | null {
-    return this.currentCardPlayer2;
-  }
-
-  getBattleMessage(): string {
-    return this.battleMessage;
+  getPlayerDeck(player: number): Card[] {
+    return this.playerDecks[player];
   }
 
   getTableCards(): Card[] {
     return this.tableCards;
   }
 
-  getHistory(): any[] {
+  playRound(): string {
+    if (this.gameOver) {
+      return this.gameOverMessage;
+    }
+
+    if (this.tableCards.length < 2) {
+        return 'Erreur : Pas assez de cartes sur la table pour résoudre la manche.';
+    }
+
+    this.roundCounter++;
+    if (this.roundCounter >= this.maxRounds) {
+      this.gameOver = true;
+      this.checkGameOver();
+      return this.gameOverMessage;
+    }
+
+    const player1CardsPlayed: Card[] = [this.tableCards[this.tableCards.length - 2]];
+    const player2CardsPlayed: Card[] = [this.tableCards[this.tableCards.length - 1]];
+
+    let winner = '';
+    let resultMessage = '';
+
+    if (player1CardsPlayed[0].compareTo(player2CardsPlayed[0]) > 0) {
+        resultMessage = `Joueur 1 gagne cette manche (${this.tableCards.length} cartes)`;
+        this.playerDecks[1].push(...this.tableCards);
+        winner = 'Joueur 1';
+    } else if (player1CardsPlayed[0].compareTo(player2CardsPlayed[0]) < 0) {
+        resultMessage = `Joueur 2 gagne cette manche (${this.tableCards.length} cartes)`;
+        this.playerDecks[2].push(...this.tableCards);
+        winner = 'Joueur 2';
+    } else {
+        // Logique de bataille
+        resultMessage = 'Bataille!';
+
+        while (true) {
+            if (this.playerDecks[1].length < 2 || this.playerDecks[2].length < 2) {
+                this.gameOver = true;
+                this.gameOverMessage = `Un des joueurs ne peut pas continuer la bataille. La partie est terminée.`;
+                return this.gameOverMessage;
+            }
+
+            const hiddenCard1 = this.playerDecks[1].shift()!;
+            const hiddenCard2 = this.playerDecks[2].shift()!;
+            this.tableCards.push(hiddenCard1);
+            this.tableCards.push(hiddenCard2);
+            player1CardsPlayed.push(hiddenCard1);
+            player2CardsPlayed.push(hiddenCard2);
+
+            const newPlayer1Card = this.playerDecks[1].shift()!;
+            const newPlayer2Card = this.playerDecks[2].shift()!;
+            this.tableCards.push(newPlayer1Card);
+            this.tableCards.push(newPlayer2Card);
+            player1CardsPlayed.push(newPlayer1Card);
+            player2CardsPlayed.push(newPlayer2Card);
+
+            if (newPlayer1Card.compareTo(newPlayer2Card) > 0) {
+                resultMessage += ` Joueur 1 gagne la bataille et prend les ${this.tableCards.length} cartes.`;
+                this.playerDecks[1].push(...this.tableCards);
+                winner = 'Joueur 1';
+                break;
+            } else if (newPlayer1Card.compareTo(newPlayer2Card) < 0) {
+                resultMessage += ` Joueur 2 gagne la bataille et prend les ${this.tableCards.length} cartes.`;
+                this.playerDecks[2].push(...this.tableCards);
+                winner = 'Joueur 2';
+                break;
+            } else {
+                resultMessage += ' Nouvelle bataille!';
+            }
+        }
+    }
+
+    this.history.push({
+        round: this.roundCounter,
+        player1Cards: player1CardsPlayed,
+        player2Cards: player2CardsPlayed,
+        winner: winner,
+        player1Total: this.playerDecks[1].length,
+        player2Total: this.playerDecks[2].length,
+    });
+
+    this.tableCards = []; // Effacer la table après la résolution de la manche ou bataille
+    this.battleOngoing = false; // Réinitialise l'état de bataille
+    this.checkGameOver();
+
+    return resultMessage;
+  }
+
+  getHistory() {
     return this.history;
   }
 
@@ -157,11 +144,35 @@ export class GameService {
     return this.gameOverMessage;
   }
 
-  getCombinedMessage(): string {
-    return this.combinedMessage;
+  getScores() {
+    return {
+      player1: this.playerDecks[1].length,
+      player2: this.playerDecks[2].length,
+    };
   }
 
-  getPlayerDeck(player: number): Card[] {
-    return player === 1 ? this.player1Deck : this.player2Deck;
+  private checkGameOver(): void {
+    if (this.playerDecks[1].length === 0 || this.playerDecks[2].length === 0 || this.roundCounter >= this.maxRounds) {
+      this.gameOver = true;
+
+      if (this.roundCounter >= this.maxRounds) {
+        // Déterminer le gagnant en fonction du nombre de cartes restantes
+        if (this.playerDecks[1].length > this.playerDecks[2].length) {
+          this.gameOverMessage = 'La limite de tours est atteinte. Le joueur 1 gagne la partie!';
+        } else if (this.playerDecks[2].length > this.playerDecks[1].length) {
+          this.gameOverMessage = 'La limite de tours est atteinte. Le joueur 2 gagne la partie!';
+        } else {
+          this.gameOverMessage = 'La limite de tours est atteinte. La partie est un match nul!';
+        }
+      } else {
+        if (this.playerDecks[1].length > this.playerDecks[2].length) {
+          this.gameOverMessage = 'Le joueur 1 gagne la partie!';
+        } else if (this.playerDecks[2].length > this.playerDecks[1].length) {
+          this.gameOverMessage = 'Le joueur 2 gagne la partie!';
+        } else {
+          this.gameOverMessage = 'La partie est un match nul!';
+        }
+      }
+    }
   }
 }
