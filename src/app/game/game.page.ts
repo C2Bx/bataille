@@ -15,10 +15,11 @@ export class GamePage implements OnDestroy {
   currentTurn: number = 1;
   autoPlayInterval: any;
   gameOverMessage: string = '';
+  winnerDeclared: string = ''; // Nouveau: Variable pour stocker le nom du gagnant
   rulesModalOpen: boolean = false;
   gameEnded: boolean = false;
   cardsDistributed: boolean = false;
-  autoScrollEnabled: boolean = true; // Suivi automatique activé par défaut
+  autoScrollEnabled: boolean = true;
 
   @ViewChild('historyContainer', { static: false }) historyContainer!: ElementRef;
 
@@ -31,7 +32,7 @@ export class GamePage implements OnDestroy {
     this.currentCardPlayer1 = null;
     this.currentCardPlayer2 = null;
     this.gameEnded = false;
-
+    this.winnerDeclared = ''; // Réinitialiser le nom du gagnant
     this.cdRef.detectChanges();
   }
 
@@ -59,14 +60,15 @@ export class GamePage implements OnDestroy {
 
   resolveRound(): void {
     if (this.currentCardPlayer1 && this.currentCardPlayer2) {
-        this.gameService.playRound();
-        if (this.gameService.getGameOverMessage()) {
-            this.stopAutoPlay();
-            this.gameEnded = true;
-            this.gameOverMessage = this.gameService.getGameOverMessage();
-        }
-        this.currentCardPlayer1 = null;
-        this.currentCardPlayer2 = null;
+      this.gameService.playRound();
+      if (this.gameService.getGameOverMessage()) {
+        this.stopAutoPlay();
+        this.gameEnded = true;
+        this.gameOverMessage = this.gameService.getGameOverMessage();
+        this.winnerDeclared = this.gameService.getWinner(); // Nouveau: Obtenir le nom du gagnant
+      }
+      this.currentCardPlayer1 = null;
+      this.currentCardPlayer2 = null;
     }
     this.cdRef.detectChanges();
     if (this.autoScrollEnabled) {
@@ -85,8 +87,6 @@ export class GamePage implements OnDestroy {
   onHistoryScroll(): void {
     const element = this.historyContainer.nativeElement;
     const atBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 10;
-
-    // Si l'utilisateur est tout en bas, réactivez le défilement automatique.
     this.autoScrollEnabled = atBottom;
   }
 
@@ -134,6 +134,7 @@ export class GamePage implements OnDestroy {
     this.stopAutoPlay();
     this.cardsDistributed = false;
     this.gameOverMessage = '';
+    this.winnerDeclared = ''; // Réinitialiser le nom du gagnant
     this.currentTurn = 1;
     this.currentCardPlayer1 = null;
     this.currentCardPlayer2 = null;

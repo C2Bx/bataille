@@ -1,10 +1,8 @@
-/* Keyframes */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* Container for the entire game */
 .game-container {
   display: flex;
   flex-direction: column;
@@ -19,27 +17,24 @@
   position: relative;
 }
 
-/* Title for history section */
 h2 {
-  color: #fff; /* Corrige le texte noir sur fond noir */
+  color: #fff; 
   margin-bottom: 1rem;
 }
 
-/* Counter displaying card numbers */
 .card-counter {
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: rgba(0, 0, 0, 0.7); /* Fond sombre pour contraste avec texte blanc */
+  background-color: rgba(0, 0, 0, 0.7); 
   padding: 10px 15px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   font-weight: bold;
   line-height: 1.5;
-  color: #ffffff; /* Texte blanc pour être visible sur fond sombre */
+  color: #ffffff;
 }
 
-/* Hand of cards for the player */
 .player-hand {
   display: flex;
   justify-content: center;
@@ -47,10 +42,9 @@ h2 {
   gap: 20px;
 }
 
-/* Individual card styling */
 .card {
-  width: 150px; /* Agrandit les cartes */
-  height: 200px; /* Agrandit les cartes */
+  width: 150px; 
+  height: 200px; 
   border-radius: 16px;
   padding: 15px;
   text-align: center;
@@ -60,28 +54,26 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5em; /* Agrandit le texte et les symboles sur les cartes */
+  font-size: 2.5em; 
   color: #fff;
-  border: 2px solid; /* Assure l'inclusion de la bordure */
+  border: 2px solid; 
 }
 
-/* Card color borders */
 .red-border {
   color: #e63946;
   border-color: #e63946;
 }
 
 .black-border {
-  color: #000000; /* Changer la couleur du texte en blanc pour la carte noire */
+  color: #000000; 
   border-color: #000000;
 }
 
-/* Hover effect for cards */
 .red-border.card:hover {
   transform: scale(1.1);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
   background-color: #e63946;
-  color: #fff; /* Garder le texte blanc visible lors du survol */
+  color: #fff; 
 }
 
 /* Hover effect for cards */
@@ -89,16 +81,14 @@ h2 {
   transform: scale(1.1);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
   background-color: #000000;
-  color: #fff; /* Garder le texte blanc visible lors du survol */
+  color: #fff; 
 }
 
-/* Content inside cards */
 .card .card-content {
-  font-size: 3.5em; /* Agrandit encore plus le texte et les symboles pour être bien visibles */
+  font-size: 3.5em; 
   font-weight: bold;
 }
 
-/* History container */
 .history-container {
   width: 100%;
   margin-top: 20px;
@@ -112,7 +102,6 @@ h2 {
   position: relative;
 }
 
-/* Card table styles */
 .card-table {
   width: 100%;
   border-collapse: collapse;
@@ -128,7 +117,7 @@ h2 {
   color: #fff;
   position: sticky;
   top: 0;
-  z-index: 2; /* S'assurer que l'entête reste au-dessus lors du défilement */
+  z-index: 2; 
 }
 
 .card-table td {
@@ -136,15 +125,13 @@ h2 {
   color: #fff;
 }
 
-/* Player info styling */
 .player-info {
   margin-bottom: 20px;
   font-size: 1.5em;
   font-weight: bold;
-  color: #ffffff; /* Texte blanc pour être visible sur fond noir */
+  color: #ffffff;
 }
 
-/* Button styles */
 ion-button {
   margin-top: 20px;
   width: 220px;
@@ -152,7 +139,7 @@ ion-button {
   --background-activated: #b82834;
   --background-focused: #b82834;
   --background-hover: #b82834;
-  --border-radius: 16px; /* Bordures arrondies */
+  --border-radius: 16px; 
   --padding-start: 12px;
   --padding-end: 12px;
   --padding-top: 14px;
@@ -174,7 +161,6 @@ ion-button[disabled] {
   --background: #666;
 }
 
-/* Decks styling */
 .decks {
   display: flex;
   justify-content: center;
@@ -208,12 +194,11 @@ ion-button[disabled] {
   padding: 10px;
   text-align: center;
   background-color: #555;
-  font-size: 1.5em; /* Augmenter la taille du texte dans les cartes */
+  font-size: 1.5em; 
   color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Deck card color borders */
 .red-border.deck-card {
   border: 1px solid #e63946;
   color: #e63946;
@@ -221,10 +206,9 @@ ion-button[disabled] {
 
 .black-border.deck-card {
   border: 1px solid #1c1c1c;
-  color: #ffffff; /* Texte blanc pour être visible sur fond noir */
+  color: #ffffff; 
 }
 
-/* Modal styling */
 ion-modal {
   --width: 80%;
   --max-width: 500px;
@@ -273,10 +257,24 @@ ion-modal ion-buttons ion-button:hover {
   text-decoration: underline;
 }
 
-/* Paragraph styling */
 p {
   margin: 1rem;
-  color: #fff; /* Assurer que le texte est blanc et visible */
+  color: #fff; 
 }
 
 
+.card-mini  {
+  width: 50px; 
+  height: 50px; 
+  border-radius: 16px;
+  padding: 15px;
+  text-align: center;
+  background-color: #ffffff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid; 
+}

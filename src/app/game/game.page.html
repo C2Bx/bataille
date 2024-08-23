@@ -5,8 +5,8 @@
 
     <!-- Affichage des scores des joueurs (visible après distribution) -->
     <div class="player-info" *ngIf="cardsDistributed">
-      <p>Joueur 1: {{ gameService.getScores().player1 }} carte(s)</p>
-      <p>Joueur 2: {{ gameService.getScores().player2 }} carte(s)</p>
+      <p>Joueur 1: {{ gameService.getPlayerDeckSizes().player1 }} carte(s)</p>
+      <p>Joueur 2: {{ gameService.getPlayerDeckSizes().player2 }} carte(s)</p>
     </div>
 
     <!-- Affichage des cartes jouées (visible après distribution) -->
@@ -19,6 +19,11 @@
       </ion-card>
     </div>
 
+    <!-- Affichage du nom du gagnant en gros texte -->
+    <div *ngIf="gameEnded && winnerDeclared" class="winner-announcement">
+      <h1>Félicitations {{ winnerDeclared }} ! Vous avez gagné !</h1>
+    </div>
+
     <!-- Boutons de contrôle du jeu (visible après distribution) -->
     <div class="buttons" *ngIf="cardsDistributed">
       <ion-button expand="full" (click)="drawCard(1)" [disabled]="!cardsDistributed || currentTurn !== 1 || autoPlayInterval">Joueur 1 joue</ion-button>
@@ -29,57 +34,55 @@
       <ion-button expand="full" *ngIf="gameEnded" (click)="restartGame()">Recommencer</ion-button>
     </div>
 
-   
-
     <!-- Bouton "Règles du jeu" (toujours visible) -->
     <ion-button expand="full" (click)="openRules()">Règles du jeu</ion-button>
 
-    <!-- Historique des coups (visible après distribution) -->
-    <div class="history-container" *ngIf="cardsDistributed">
-      <h2>Historique des coups</h2>
-      <div class="history" #historyContainer (scroll)="onHistoryScroll()">
-        <table class="card-table">
-          <thead>
-            <tr>
-              <th>Tour</th>
-              <th>Joueur 1</th>
-              <th>Joueur 2</th>
-              <th>Gagnant</th>
-              <th>Total cartes Joueur 1</th>
-              <th>Total cartes Joueur 2</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let round of getHistory()">
-              <td>{{ round.round }}</td>
-              <td>
-                <div *ngFor="let card of round.player1Cards" [ngClass]="getCardColorClass(card.suit)">
-                  {{ card.value }} {{ card.suit }}
-                </div>
-              </td>
-              <td>
-                <div *ngFor="let card of round.player2Cards" [ngClass]="getCardColorClass(card.suit)">
-                  {{ card.value }} {{ card.suit }}
-                </div>
-              </td>
-              <td>{{ round.winner }}</td>
-              <td>{{ round.player1Total }}</td>
-              <td>{{ round.player2Total }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+<!-- Historique des coups (visible après distribution) -->
+<div class="history-container" *ngIf="cardsDistributed">
+  <h2>Historique des coups</h2>
+  <div class="history" #historyContainer (scroll)="onHistoryScroll()">
+    <table class="card-table">
+      <thead>
+        <tr>
+          <th>Tour</th>
+          <th>Joueur 1</th>
+          <th>Joueur 2</th>
+          <th>Gagnant</th>
+          <th>Total cartes Joueur 1</th>
+          <th>Total cartes Joueur 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let round of getHistory()">
+          <td>{{ round.round }}</td>
+          <td>
+            <div *ngFor="let card of round.player1Cards" class="card-mini" [ngClass]="getCardColorClass(card.suit)">
+              {{ card.value }}{{ card.suit }}
+            </div>
+          </td>
+          <td>
+            <div *ngFor="let card of round.player2Cards" class="card-mini" [ngClass]="getCardColorClass(card.suit)">
+              {{ card.value }}{{ card.suit }}
+            </div>
+          </td>
+          <td>{{ round.winner }}</td>
+          <td>{{ round.player1Total }}</td>
+          <td>{{ round.player2Total }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
- <!-- Bouton pour basculer entre le défilement manuel et automatique (visible après distribution) -->
- <ion-button expand="full" *ngIf="cardsDistributed" (click)="toggleAutoScroll()">
-  {{ autoScrollEnabled ? 'Désactiver le défilement auto' : 'Activer le défilement auto' }}
-</ion-button>
+    <!-- Bouton pour basculer entre le défilement manuel et automatique (visible après distribution) -->
+    <ion-button expand="full" *ngIf="cardsDistributed" (click)="toggleAutoScroll()">
+      {{ autoScrollEnabled ? 'Désactiver le défilement auto' : 'Activer le défilement auto' }}
+    </ion-button>
 
     <!-- Affichage des paquets des joueurs (visible après distribution) -->
     <div class="decks" *ngIf="cardsDistributed">
       <div class="deck">
-        <h3>Paquet de Joueur 1 ({{ gameService.getScores().player1 }})</h3>
+        <h3>Paquet de Joueur 1 ({{ gameService.getPlayerDeckSizes().player1 }})</h3>
         <div class="deck-cards">
           <ion-card *ngFor="let card of gameService.getPlayerDeck(1)" class="deck-card" [ngClass]="getCardColorClass(card.suit)">
             <ion-card-content>{{ card.value }} {{ card.suit }}</ion-card-content>
@@ -87,7 +90,7 @@
         </div>
       </div>
       <div class="deck">
-        <h3>Paquet de Joueur 2 ({{ gameService.getScores().player2 }})</h3>
+        <h3>Paquet de Joueur 2 ({{ gameService.getPlayerDeckSizes().player2 }})</h3>
         <div class="deck-cards">
           <ion-card *ngFor="let card of gameService.getPlayerDeck(2)" class="deck-card" [ngClass]="getCardColorClass(card.suit)">
             <ion-card-content>{{ card.value }} {{ card.suit }}</ion-card-content>
