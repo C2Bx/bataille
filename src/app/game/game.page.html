@@ -1,15 +1,15 @@
 <ion-content>
   <div class="game-container">
-    <!-- Bouton "Distribuer les cartes" -->
+    <!-- Bouton pour distribuer les cartes -->
     <ion-button expand="full" *ngIf="!cardsDistributed" (click)="distributeCards()">Distribuer les cartes</ion-button>
 
-    <!-- Affichage des scores des joueurs (visible après distribution) -->
+    <!-- Information sur les joueurs -->
     <div class="player-info" *ngIf="cardsDistributed">
       <p>Joueur 1: {{ gameService.getPlayerDeckSizes().player1 }} carte(s)</p>
       <p>Joueur 2: {{ gameService.getPlayerDeckSizes().player2 }} carte(s)</p>
     </div>
 
-    <!-- Affichage des cartes jouées (visible après distribution) -->
+    <!-- Cartes actuelles des joueurs -->
     <div class="player-hand" *ngIf="cardsDistributed">
       <ion-card *ngIf="currentCardPlayer1" class="card" [ngClass]="getCardColorClass(currentCardPlayer1.suit)">
         <ion-card-content>{{ currentCardPlayer1.value }} {{ currentCardPlayer1.suit }}</ion-card-content>
@@ -19,67 +19,68 @@
       </ion-card>
     </div>
 
-    <!-- Affichage du nom du gagnant en gros texte -->
+    <!-- Annonce du gagnant -->
     <div *ngIf="gameEnded && winnerDeclared" class="winner-announcement">
       <h1>Félicitations {{ winnerDeclared }} ! Vous avez gagné !</h1>
     </div>
 
-    <!-- Boutons de contrôle du jeu (visible après distribution) -->
+    <!-- Boutons de jeu -->
     <div class="buttons" *ngIf="cardsDistributed">
-      <ion-button expand="full" (click)="drawCard(1)" [disabled]="!cardsDistributed || currentTurn !== 1 || autoPlayInterval">Joueur 1 joue</ion-button>
-      <ion-button expand="full" (click)="drawCard(2)" [disabled]="!cardsDistributed || currentTurn !== 2 || !currentCardPlayer1 || autoPlayInterval">Joueur 2 joue</ion-button>
-      <ion-button expand="full" color="danger" (click)="toggleAutoPlay()" [disabled]="!cardsDistributed">
-        {{ autoPlayInterval ? 'Arrêter le jeu automatique' : 'Jeu automatique' }}
+      <ion-button *ngIf="!gameService.isGameOver()" expand="full" (click)="drawCard(1)" [disabled]="!cardsDistributed || currentTurn !== 1 || autoPlayInterval">Joueur 1 joue</ion-button>
+      <ion-button *ngIf="!gameService.isGameOver()" expand="full" (click)="drawCard(2)" [disabled]="!cardsDistributed || currentTurn !== 2 || !currentCardPlayer1 || autoPlayInterval">Joueur 2 joue</ion-button>
+      <ion-button *ngIf="!gameService.isGameOver()" expand="full" color="danger" (click)="toggleAutoPlay()" [disabled]="!cardsDistributed">
+          {{ autoPlayInterval ? 'Arrêter le jeu automatique' : 'Jeu automatique' }}
       </ion-button>
+      <!-- Bouton pour recommencer la partie, visible seulement à la fin du jeu -->
       <ion-button expand="full" *ngIf="gameEnded" (click)="restartGame()">Recommencer</ion-button>
     </div>
 
-    <!-- Bouton "Règles du jeu" (toujours visible) -->
+    <!-- Bouton pour ouvrir les règles du jeu -->
     <ion-button expand="full" (click)="openRules()">Règles du jeu</ion-button>
 
-<!-- Historique des coups (visible après distribution) -->
-<div class="history-container" *ngIf="cardsDistributed">
-  <h2>Historique des coups</h2>
-  <div class="history" #historyContainer (scroll)="onHistoryScroll()">
-    <table class="card-table">
-      <thead>
-        <tr>
-          <th>Tour</th>
-          <th>Joueur 1</th>
-          <th>Joueur 2</th>
-          <th>Gagnant</th>
-          <th>Total cartes Joueur 1</th>
-          <th>Total cartes Joueur 2</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let round of getHistory()">
-          <td>{{ round.round }}</td>
-          <td>
-            <div *ngFor="let card of round.player1Cards" class="card-mini" [ngClass]="getCardColorClass(card.suit)">
-              {{ card.value }}{{ card.suit }}
-            </div>
-          </td>
-          <td>
-            <div *ngFor="let card of round.player2Cards" class="card-mini" [ngClass]="getCardColorClass(card.suit)">
-              {{ card.value }}{{ card.suit }}
-            </div>
-          </td>
-          <td>{{ round.winner }}</td>
-          <td>{{ round.player1Total }}</td>
-          <td>{{ round.player2Total }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-    <!-- Bouton pour basculer entre le défilement manuel et automatique (visible après distribution) -->
+    <!-- Historique des coups joués -->
+    <div class="history-container" *ngIf="cardsDistributed">
+      <h2>Historique des coups</h2>
+      <div class="history" #historyContainer (scroll)="onHistoryScroll()">
+        <table class="card-table">
+          <thead>
+            <tr>
+              <th>Tour</th>
+              <th>Joueur 1</th>
+              <th>Joueur 2</th>
+              <th>Gagnant</th>
+              <th>Total cartes Joueur 1</th>
+              <th>Total cartes Joueur 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let round of gameService.getHistory(); let i = index">
+              <td>{{ i + 1 }}</td> <!-- Numéro du tour -->
+              <td>
+                  <div *ngFor="let card of round.player1Cards" class="card-mini" [ngClass]="getCardColorClass(card.suit)">
+                      {{ card.value }}{{ card.suit }}
+                  </div>
+              </td>
+              <td>
+                  <div *ngFor="let card of round.player2Cards" class="card-mini" [ngClass]="getCardColorClass(card.suit)">
+                      {{ card.value }}{{ card.suit }}
+                  </div>
+              </td>
+              <td>{{ round.winner }}</td>
+              <td>{{ round.player1Total }}</td>
+              <td>{{ round.player2Total }}</td>
+            </tr>          
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Bouton pour activer/désactiver le défilement automatique -->
     <ion-button expand="full" *ngIf="cardsDistributed" (click)="toggleAutoScroll()">
       {{ autoScrollEnabled ? 'Désactiver le défilement auto' : 'Activer le défilement auto' }}
     </ion-button>
 
-    <!-- Affichage des paquets des joueurs (visible après distribution) -->
+    <!-- Affichage des paquets de cartes des joueurs -->
     <div class="decks" *ngIf="cardsDistributed">
       <div class="deck">
         <h3>Paquet de Joueur 1 ({{ gameService.getPlayerDeckSizes().player1 }})</h3>
@@ -100,7 +101,7 @@
     </div>
   </div>
 
-  <!-- Modal pour les règles du jeu (toujours accessible) -->
+  <!-- Modal pour afficher les règles du jeu -->
   <ion-modal [isOpen]="rulesModalOpen" (ionModalDidDismiss)="closeRules()">
     <ng-template>
       <ion-header>
@@ -119,7 +120,7 @@
           <p><strong>But du jeu :</strong> Le but est de remporter toutes les cartes de l'adversaire.</p>
           <p><strong>Déroulement du jeu :</strong> Les deux joueurs retournent simultanément la carte du dessus de leur pile et la posent face visible sur la table. Le joueur qui a retourné la carte de valeur la plus élevée remporte les deux cartes et les place sous sa pile de cartes, face cachée. Les valeurs des cartes sont les suivantes (de la plus faible à la plus forte) : 2, 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As.</p>
           <p><strong>Cas de bataille :</strong> Si les deux cartes sont de même valeur, il y a "bataille". Chaque joueur pose une carte face cachée sur la carte qu'il vient de retourner, puis retourne une nouvelle carte face visible par-dessus. Le joueur qui a retourné la carte de valeur la plus élevée cette fois-ci remporte toutes les cartes en jeu (les cartes visibles et cachées). Si les nouvelles cartes sont encore de même valeur, une nouvelle bataille est déclenchée selon le même principe.</p>
-          <p><strong>Fin de la partie :</strong> La partie continue jusqu'à ce qu'un des joueurs n'ait plus de cartes. Le joueur qui a toutes les cartes est déclaré vainqueur. Pour éviter des parties trop longues, un nombre limite de tours peut être fixé. Dans ce jeu, la limite est de 2999 tours. Si aucun joueur n'a toutes les cartes à la fin de ce nombre de tours, le joueur ayant le plus de cartes à ce moment-là est déclaré vainqueur.</p>
+          <p><strong>Fin de la partie :</strong> La partie continue jusqu'à ce qu'un des joueurs n'ait plus de cartes. Le joueur qui a toutes les cartes est déclaré vainqueur. Pour éviter des parties trop longues, un nombre limite de tours peut être fixé. Dans ce jeu, la limite est de 3000 tours. Si aucun joueur n'a toutes les cartes à la fin de ce nombre de tours, le joueur ayant le plus de cartes à ce moment-là est déclaré vainqueur.</p>
         </div>
       </ion-content>
     </ng-template>

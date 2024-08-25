@@ -22,6 +22,11 @@ h2 {
   margin-bottom: 1rem;
 }
 
+h1 {
+  color: #fff; 
+  margin-bottom: 1rem;
+}
+
 .card-counter {
   position: absolute;
   top: 10px;
@@ -76,7 +81,6 @@ h2 {
   color: #fff; 
 }
 
-/* Hover effect for cards */
 .black-border.card:hover {
   transform: scale(1.1);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
@@ -154,7 +158,6 @@ ion-card-content {
 ion-button:hover {
   transform: scale(1.05);
   border-radius: 16px;
-
 }
 
 ion-button[disabled] {
@@ -262,7 +265,6 @@ p {
   color: #fff; 
 }
 
-
 .card-mini  {
   width: 50px; 
   height: 50px; 
@@ -275,6 +277,12 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-
+  margin: 1rem;
   border: 2px solid; 
+}
+
+td {
+  border: 1px solid black; 
+  padding: 8px; 
+  border-radius: 10px;
 }

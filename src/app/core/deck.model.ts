@@ -20,14 +20,16 @@ export class Deck {
     }
 
     public melanger(): void {
+        // Mélange de Fisher-Yates
         for (let i = this.cards.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
         }
+        console.log('Deck mélangé :', this.cards.map(card => `${card.value}${card.suit}`));
     }
 
     public distribuer(): Card[] {
-        return this.cards;
+        return [...this.cards];
     }
 
     public piocher(): Card | undefined {
